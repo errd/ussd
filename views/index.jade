@@ -1,0 +1,83 @@
+include mixins
+extends layout
+
+block content
+    .content
+      .row
+        .col-md-6
+            .panel.panel-default
+                .panel-heading
+                    .glyphicon.glyphicon-send(aria-hidden="true") &nbsp;Коды для обработки
+                table.table.table-bordered#codes-list
+                    tr("Код", "Номинал", "Обработано", "Статус")
+                    tr
+                        th Код
+                        th Номинал
+                        th Обработано
+                        th Статус
+                    tr
+                        td 324231432421341234
+                        td 500
+                        td 18&dot;10&dot;2015
+                        td Обработано
+                    tr
+                        td 7475784562453535435434
+                        td 300
+                        td 18&dot;10&dot;2015
+                        td Ошибка
+                    tr
+                        td 9876543456765454654567
+                        td 100
+                        td 18&dot;10&dot;2015
+                        td Обработано
+                    tr
+                        td 9876543456765454654567
+                        td 100
+                        td 18&dot;10&dot;2015
+                        td В обработке
+                    tr
+                        td 9876543456765454654567
+                        td 100
+                        td 18&dot;10&dot;2015
+                        td В очереди
+                    tr
+                        td 9876543456765454654567
+                        td 100
+                        td 18&dot;10&dot;2015
+                        td В очереди
+        .col-md-6
+            .panel.panel-default
+                .panel-body
+                    .btn-toolbar
+                        button.btn.btn-primary Обработать 25 кодов
+                        .btn-group
+                            button.btn.btn-default.dropdown-toggle(type="button", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false") Загрузить 
+                                span.caret
+                            ul.dropdown-menu
+                                li: a(href="#") Загрузить коды
+                                li: a(href="#") Загрузить сим-карты
+            .panel.panel-default
+                .panel-heading
+                    .glyphicon.glyphicon-flash(aria-hidden="true") &nbsp;Сим-карты
+                table.table.table-bordered#codes-list
+                    tr
+                        th Номер
+                        th Баланс
+                        th Прогноз
+                    tr
+                        td 9629898596
+                        td 500
+                        td +300
+                    tr
+                        td 9629898596
+                        td 500
+                        td +300
+                    tr
+                        td 9629898596
+                        td 500
+                        td +300
+            .panel.panel-default
+                .panel-heading Статистика
+                .panel-body Успешно: 53
+                    br 
+                    Ошибок: 1
