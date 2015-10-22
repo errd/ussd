@@ -7,13 +7,15 @@ block content
         .col-md-6
             .panel.panel-default
                 .panel-heading
-                    .glyphicon.glyphicon-send(aria-hidden="true") &nbsp;Коды для обработки
+                    .glyphicon.glyphicon-send(aria-hidden="true")
+                    &nbsp;Коды для обработки
                 table.table.table-bordered#codes-list
-                    tr
-                        th Код
-                        th Номинал
-                        th Обработано
-                        th Статус
+                    thead
+                        tr
+                            th Код
+                            th Номинал
+                            th Обработано
+                            th Статус
         .col-md-6
             .panel.panel-default
                 .panel-body
@@ -27,24 +29,14 @@ block content
                                 li: a(href="#") Загрузить сим-карты
             .panel.panel-default
                 .panel-heading
-                    .glyphicon.glyphicon-flash(aria-hidden="true") &nbsp;Сим-карты
-                table.table.table-bordered#codes-list
-                    tr
-                        th Номер
-                        th Баланс
-                        th Прогноз
-                    tr
-                        td 9629898596
-                        td 500
-                        td +300
-                    tr
-                        td 9629898596
-                        td 500
-                        td +300
-                    tr
-                        td 9629898596
-                        td 500
-                        td +300
+                    .glyphicon.glyphicon-flash(aria-hidden="true")
+                    &nbsp;Сим-карты
+                table.table.table-bordered#simcards-list
+                    thead
+                        tr
+                            th Номер
+                            th Баланс
+                            th Прогноз
             .panel.panel-default
                 .panel-heading Статистика
                 .panel-body Успешно: 53

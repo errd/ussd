@@ -4,7 +4,7 @@ $(function(){
             "dom": "t<'dt-toolbar-footer'<'col-xs-6'i><'col-xs-6'p>>",
             "processing": true,
             "ajax": {
-                url: '/codes',
+                url: '/ussd-codes',
                 dataSrc: ''
             },
             "columns": [{
@@ -17,6 +17,20 @@ $(function(){
                 "data": "updated"
             }]
         });
-
+        $('#simcards-list').DataTable({
+            "dom": "t<'dt-toolbar-footer'<'col-xs-6'i><'col-xs-6'p>>",
+            "processing": true,
+            "ajax": {
+                url: '/sim-cards',
+                dataSrc: ''
+            },
+            "columns": [{
+                "data": "num",
+            },{
+                "data": "val"
+            },{
+                "data": "active"
+            }]
+        });
     });
 });
