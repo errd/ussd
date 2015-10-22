@@ -5,8 +5,6 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var routes = require('./routes/index');
-var users = require('./routes/users');
 var app = express();
 
 //SQLite
@@ -14,7 +12,7 @@ var sqlite3 = require('sqlite3').verbose();
 var dbFile = './db/ussd.db';
 var dbExists = fs.existsSync(dbFile);
 if(!dbExists) fs.openSync(dbFile, 'w');
-var db = new sqlite3.Database(dbFile);
+db = new sqlite3.Database(dbFile);
 fs.readFile('./db/ussd.sql', 'utf8', function (err, sql) {
   if(err) throw err;
   db.exec(sql, function (err) {
@@ -22,6 +20,9 @@ fs.readFile('./db/ussd.sql', 'utf8', function (err, sql) {
   });
 });
 
+//Routers
+var routes = require('./routes/index');
+var codes = require('./routes/codes');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -36,7 +37,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
-app.use('/users', users);
+app.use('/codes', codes);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
