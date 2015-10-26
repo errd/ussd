@@ -20,7 +20,8 @@ function JSUploader() {
             success: function (response) {
                 if (response.status == 'ok') {
                     console.log(response.text);
-                    $('#ussd-list').DataTable().draw(false);
+                    $('#ussd-list').DataTable().ajax.reload();
+                    $('#simcards-list').DataTable().ajax.reload();
                 }
                 else {
                     console.log(response.errors);
