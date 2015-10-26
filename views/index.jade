@@ -2,13 +2,14 @@ include mixins
 extends layout
 
 block content
+    input(type='file',style='display: none', name='uploadUssdFiles',id='uploadUssdFiles')
+    input(type='file',style='display: none', name='uploadPhonesFiles',id='uploadPhonesFiles')
     .content
       .row
         .col-md-6
             .panel.panel-default
                 .panel-heading
-                    .glyphicon.glyphicon-send(aria-hidden="true")
-                    &nbsp;Коды для обработки
+                    .glyphicon.glyphicon-send(aria-hidden="true")&nbsp;Коды для обработки
                 table.table.table-bordered#codes-list
                     thead
                         tr
@@ -25,12 +26,11 @@ block content
                             button.btn.btn-default.dropdown-toggle(type="button", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false") Загрузить 
                                 span.caret
                             ul.dropdown-menu
-                                li: a(href="#") Загрузить коды
-                                li: a(href="#") Загрузить сим-карты
+                                li: a(href="#")(id='addUssdFileButton') Загрузить коды
+                                li: a(href="#")(id='addPhonesFilesButton') Загрузить сим-карты
             .panel.panel-default
                 .panel-heading
-                    .glyphicon.glyphicon-flash(aria-hidden="true")
-                    &nbsp;Сим-карты
+                    .glyphicon.glyphicon-flash(aria-hidden="true")&nbsp;Сим-карты
                 table.table.table-bordered#simcards-list
                     thead
                         tr
@@ -40,5 +40,5 @@ block content
             .panel.panel-default
                 .panel-heading Статистика
                 .panel-body Успешно: 53
-                    br 
+                    br
                     Ошибок: 1

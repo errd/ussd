@@ -8,7 +8,7 @@ $(function(){
                 dataSrc: ''
             },
             "columns": [{
-                "data": "code",
+                "data": "code"
             },{
                 "data": "val"
             },{
@@ -25,7 +25,7 @@ $(function(){
                 dataSrc: ''
             },
             "columns": [{
-                "data": "num",
+                "data": "num"
             },{
                 "data": "val"
             },{
