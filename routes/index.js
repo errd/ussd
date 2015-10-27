@@ -48,8 +48,14 @@ router.post('/upload-phones', function(req, res, next) {
 
             for(var i = 0; i < obj.length; i++) {
                 data = obj[i].data;
+
+                if (data.length<1) continue;
+
                 for(var j = 0; j < data.length; j++) {
                     dataValues = data[j];
+
+                    if (dataValues.length<1) continue;
+
                     var array = [];
 
                     if (dataValues[0]) array.push(dataValues[0]);
@@ -58,20 +64,19 @@ router.post('/upload-phones', function(req, res, next) {
                     if (dataValues[1]) array.push(dataValues[1]);
                     else array.push(0);
 
-                    array.push(0);
+                    array.push(new Date().getTime());
                     array.push(0);
                     values.push(array);
                 }
             }
 
             db.run("delete from sim_cards");
-            var stmt = db.prepare("insert or ignore into sim_cards (num, val, created, updated) VALUES (?, ?, ?, ?)");
+            var stmt = db.prepare("insert or ignore into sim_cards (num, val, created, active, updated) VALUES (?, ?, ?, ?, ?)");
 
             for (var i = 0; i < values.length; i++) {
                 stmt.run(values[i][0], values[i][1], values[i][2], values[i][3]);
             }
             stmt.finalize();
-
             res.send({status: 'ok', text: 'Success'});
         });
     });
@@ -109,8 +114,10 @@ router.post('/upload-ussd', function(req, res, next) {
 
             for(var i = 0; i < obj.length; i++) {
                 data = obj[i].data;
+                if (data.length<1) continue;
                 for(var j = 0; j < data.length; j++) {
                     dataValues = data[j];
+                    if (dataValues.length<1) continue;
                     var array = [];
 
                     if (dataValues[0]) array.push(dataValues[0]);
@@ -119,7 +126,7 @@ router.post('/upload-ussd', function(req, res, next) {
                     if (dataValues[1]) array.push(dataValues[1]);
                     else array.push(0);
 
-                    array.push(0);
+                    array.push(new Date().getTime());
                     array.push(0);
                     values.push(array);
                 }
