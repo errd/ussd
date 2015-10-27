@@ -29,9 +29,9 @@ router.post('/upload-phones', function(req, res, next) {
         if(fs.existsSync(path)) fs.unlinkSync(path);
     });
 
-    form.on('close', function() {
+   /* form.on('close', function() {
         res.send({status: 'ok', text: 'Success'});
-    });
+    });*/
 
     form.on('part', function(part) {
         uploadFile.size = part.byteCount;
@@ -65,12 +65,14 @@ router.post('/upload-phones', function(req, res, next) {
             }
 
             db.run("delete from sim_cards");
-            var stmt = db.prepare("insert into sim_cards (num, val, created, updated) VALUES (?, ?, ?, ?)");
+            var stmt = db.prepare("insert or ignore into sim_cards (num, val, created, updated) VALUES (?, ?, ?, ?)");
 
             for (var i = 0; i < values.length; i++) {
                 stmt.run(values[i][0], values[i][1], values[i][2], values[i][3]);
             }
             stmt.finalize();
+
+            res.send({status: 'ok', text: 'Success'});
         });
     });
 
@@ -87,9 +89,9 @@ router.post('/upload-ussd', function(req, res, next) {
         res.send({status: 'bad', text: 'Success'});
     });
 
-    form.on('close', function() {
+    /*form.on('close', function() {
         res.send({status: 'ok', text: 'Success'});
-    });
+    });*/
 
     form.on('part', function(part) {
         uploadFile.size = part.byteCount;
@@ -98,6 +100,7 @@ router.post('/upload-ussd', function(req, res, next) {
 
         var out = fs.createWriteStream(uploadFile.path);
         part.pipe(out);
+
         out.on('close', function () {
             var obj = xlsx.parse(path);
             var dataValues;
@@ -123,12 +126,14 @@ router.post('/upload-ussd', function(req, res, next) {
             }
 
             db.run("delete from ussd_codes");
-            var stmt = db.prepare("insert into ussd_codes (code, val, created, updated) VALUES (?, ?, ?, ?)");
+            var stmt = db.prepare("insert or ignore into ussd_codes (code, val, created, updated) VALUES (?, ?, ?, ?)");
 
             for (var i = 0; i < values.length; i++) {
                 stmt.run(values[i][0], values[i][1], values[i][2], values[i][3]);
             }
+
             stmt.finalize();
+            res.send({status: 'ok', text: 'Success'});
         });
     });
 

@@ -3,7 +3,7 @@ create table if not exists ussd_codes (
     val numeric not null,
     status int not null default 0,
     created long not null,
-    updated long not null
+    updated long
 );
 
 create table if not exists sim_cards (
@@ -11,7 +11,7 @@ create table if not exists sim_cards (
     val numeric not null,
     active int not null default 1,
     created long not null,
-    updated long not null
+    updated long
 );
 
 create table if not exists ussd_log (
