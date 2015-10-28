@@ -76,8 +76,10 @@ router.post('/upload-phones', function(req, res, next) {
             for (var i = 0; i < values.length; i++) {
                 stmt.run(values[i][0], values[i][1], values[i][2], values[i][3]);
             }
-            stmt.finalize();
-            res.send({status: 'ok', text: 'Success'});
+            stmt.finalize(function() {
+                res.send({status: 'ok', text: 'Success'});
+            });
+
         });
     });
 
@@ -139,8 +141,9 @@ router.post('/upload-ussd', function(req, res, next) {
                 stmt.run(values[i][0], values[i][1], values[i][2], values[i][3]);
             }
 
-            stmt.finalize();
-            res.send({status: 'ok', text: 'Success'});
+            stmt.finalize(function() {
+                res.send({status: 'ok', text: 'Success'});
+            });
         });
     });
 
@@ -148,3 +151,19 @@ router.post('/upload-ussd', function(req, res, next) {
 });
 
 module.exports = router;
+
+/*function assignSimcard() {
+    var simcards = [];
+    var dailyLimit = 10000;
+    var monthlyLimit = 40000;
+
+    db.all("select
+    sc.num,
+    sum(uc.val) as tval
+    from sim_cards sc
+    left join ussd_codes uc on sc.num=uc.num and uc.updated between 0 and 4
+    where sc.num='9'
+    group by sc.num
+
+    ")
+}*/

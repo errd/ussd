@@ -1,6 +1,7 @@
 create table if not exists ussd_codes (
     code long primary key,
     val numeric not null,
+    num long,
     status int not null default 0,
     created long not null,
     updated long

@@ -1,3 +1,13 @@
+body{
+    min-width:800px; /* suppose you want minimun width of 1000px */
+    width: auto !important;  /* Firefox will set width as auto */
+    width:800px;             /* As IE ignores !important it will set width as 1000px; */
+}
+
+.panel-heading .glyphicon {
+    margin-right: 5px !important;
+}
+
 /*Tune up datatables*/
 table.dataTable {
     margin: 0 !important;
@@ -7,4 +17,16 @@ div.dataTables_wrapper div.dataTables_paginate ul.pagination {
 }
 div.dataTables_wrapper div.dataTables_info {
     padding-top: 10px !important;
+}
+
+div.dt-toolbar-footer {
+    height: 50px;
+}
+
+div.dt-toolbar-footer div {
+    height: 50px;
+}
+
+div.dataTables_wrapper div.dataTables_info {
+    padding-top: 14px !important;
 }

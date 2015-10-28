@@ -9,7 +9,8 @@ block content
         .col-md-6
             .panel.panel-default
                 .panel-heading
-                    .glyphicon.glyphicon-send(aria-hidden="true")&nbsp;Коды для обработки
+                    .glyphicon.glyphicon-send(aria-hidden="true")
+                    Коды для обработки
                 table.table.table-bordered#codes-list
                     thead
                         tr
@@ -26,11 +27,12 @@ block content
                             button.btn.btn-default.dropdown-toggle(type="button", data-toggle="dropdown", aria-haspopup="true", aria-expanded="false") Загрузить 
                                 span.caret
                             ul.dropdown-menu
-                                li: a(href="#")(id='addUssdFileButton') Загрузить коды
-                                li: a(href="#")(id='addPhonesFilesButton') Загрузить сим-карты
+                                li: a(href="#")(id='upload-ussd-codes') Загрузить коды
+                                li: a(href="#")(id='addSimcardsFilesButton') Загрузить сим-карты
             .panel.panel-default
                 .panel-heading
-                    .glyphicon.glyphicon-flash(aria-hidden="true")&nbsp;Сим-карты
+                    .glyphicon.glyphicon-flash(aria-hidden="true")
+                    Сим-карты
                 table.table.table-bordered#simcards-list
                     thead
                         tr
@@ -38,7 +40,8 @@ block content
                             th Баланс
                             th Прогноз
             .panel.panel-default
-                .panel-heading Статистика
+                .panel-heading
+                    Статистика
                 .panel-body Успешно: 53
                     br
                     Ошибок: 1
