@@ -16,7 +16,7 @@ router.get('/ussd-codes', function(req, res, next) {
 });
 
 router.get('/sim-cards', function(req, res, next) {
-  db.all("select * from sim_cards order by num", function(err, rows) {
+  db.all("select sc.num, sc.val, coalesce(sum(uc.val), 0) as in_val from sim_cards sc left join ussd_codes uc on uc.num-sc.num group by sc.num order by sc.num", function(err, rows) {
     res.send(JSON.stringify(rows));
   });
 });
@@ -162,6 +162,7 @@ function assignSimcard() {Fiber(function() {
     var dailyLimit = 1000;
     var monthlyLimit = 30000;
     var fiber = Fiber.current;
+
     db.all("select count(*) as cnt from ussd_codes where num is null", function (err, row) {
         if(err) return fiber.throwInto(err);
         fiber.run(row[0].cnt);
@@ -172,8 +173,9 @@ function assignSimcard() {Fiber(function() {
     fiber = Fiber.current;
     db.all("select * from (select sc.num, " +
         "coalesce((select sum(val) from ussd_log where num=sc.num and created>=strftime('%s', 'now', 'start of day')), 0) as dval, " +
-        "coalesce((select sum(val) from ussd_log where num=sc.num and created>=(select min(created) " +
-        "from ussd_log where created>=strftime('%s', 'now', 'start of month'))), 0) as mval from sim_cards sc) " +
+        "coalesce((select sum(val) from ussd_log where num=sc.num and created>=coalesce((select min(created) from ussd_log " +
+        "where created>=strftime('%s', 'now', 'start of month')), strftime('%s', 'now', 'start of month'))), 0) as mval " +
+        "from sim_cards sc) " +
         "where dval<" + dailyLimit + " and mval<" + monthlyLimit + " order by num",
         function(err, rows) {
             if(err) return fiber.throwInto(err);

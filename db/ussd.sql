@@ -7,7 +7,6 @@ create table if not exists ussd_codes (
 
 create table if not exists sim_cards (
     num long primary key,
-    active int not null default 1,
     created long not null,
     updated long
 );
