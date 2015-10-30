@@ -3,7 +3,6 @@ var router = express.Router();
 var fs = require("fs");
 var xlsx = require('node-xlsx');
 var multiparty = require('multiparty');
-//var sync = require('synchronize')
 var Fiber = require('fibers');
 
 router.get('/', function(req, res, next) {
@@ -80,6 +79,7 @@ router.post('/upload-phones', function(req, res, next) {
             }
             stmt.finalize(function() {
                 res.send({status: 'ok', text: 'Success'});
+                assignSimcard();
             });
 
         });
@@ -145,6 +145,7 @@ router.post('/upload-ussd', function(req, res, next) {
 
             stmt.finalize(function() {
                 res.send({status: 'ok', text: 'Success'});
+                assignSimcard();
             });
         });
     });
@@ -154,33 +155,8 @@ router.post('/upload-ussd', function(req, res, next) {
 
 router.get('/assign', function(req, res, next) {
     assignSimcard();
-    res.send('OK');
+    res.send('Scheduled...');
 });
-
-function getUnassignedCount(cb) {
-    db.all("select count(*) as cnt from ussd_codes where num is null", function (err, row) {
-        cb(null, row[0].cnt);
-    })
-}
-
-function getSimcardValue(num, from, to, cb) {
-    db.all("select sum(val) as val from ussd_log where num='" + num + "' and created between " + from + " and " + to, function (err, rows) {
-        if(rows && rows[0] && rows[0].val != null) cb(null, rows[0].val); else cb(null, 0);
-    })
-}
-
-function getMonthStart(num, cb) {
-    db.all("select sum(val) as val from ussd_log where num='" + num + "' and created between " + from + " and " + to, function (err, row) {
-        cb(null, row[0].val);
-    })
-}
-
-function someF() {
-    return fiber(function() {
-        var valueFunc = sync(getSimcardValue);
-        return valueFunc('9', 0, 1);
-    }).run();
-}
 
 function assignSimcard() {Fiber(function() {
     var dailyLimit = 1000;
@@ -207,27 +183,17 @@ function assignSimcard() {Fiber(function() {
     var simcards = Fiber.yield();
     if(simcards.length == 0) return;
 
+    var updateStmt = db.prepare("update ussd_codes set num=? where code=?");
     db.each("select code, val from ussd_codes where num is null", function (err, row) {
-        //choose simcard
         for(var i = 0; i < simcards.length; i++) {
             if(simcards[i].dval + row.val < dailyLimit && simcards[i].mval + row.val < monthlyLimit) {
                 simcards[i].dval += row.val;
                 simcards[i].mval += row.val;
-                db.run("update ussd_codes set num=? where code=?", simcards[i].num, row.code);
+                updateStmt.run(simcards[i].num, row.code);
+                return;
             }
         }
-    });
-    console.log("FINISHED");
+    }, function() {  updateStmt.finalize(); });
 }).run();}
-assignSimcard();
-
-/*db.all("select
- sc.num,
- sum(uc.val) as tval
- from sim_cards sc
- left join ussd_codes uc on sc.num=uc.num and uc.updated between 0 and 4
- where sc.num='9'
- group by sc.num
- ")*/
 
 module.exports = router;

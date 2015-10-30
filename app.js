@@ -1,7 +1,6 @@
 var express = require('express');
 var path = require('path');
 var fs = require('fs');
-var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
@@ -19,6 +18,7 @@ fs.readFile('./db/ussd.sql', 'utf8', function (err, sql) {
     if(err) throw err;
   });
 });
+db.configure("busyTimeout", 5000);
 
 //Routers
 var routes = require('./routes/index');
