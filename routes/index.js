@@ -186,7 +186,7 @@ function assignSimcard() {Fiber(function() {
     var updateStmt = db.prepare("update ussd_codes set num=? where code=?");
     db.each("select code, val from ussd_codes where num is null", function (err, row) {
         for(var i = 0; i < simcards.length; i++) {
-            if(simcards[i].dval + row.val < dailyLimit && simcards[i].mval + row.val < monthlyLimit) {
+            if(simcards[i].dval + row.val <= dailyLimit && simcards[i].mval + row.val <= monthlyLimit) {
                 simcards[i].dval += row.val;
                 simcards[i].mval += row.val;
                 updateStmt.run(simcards[i].num, row.code);
