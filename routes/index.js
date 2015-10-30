@@ -3,8 +3,8 @@ var router = express.Router();
 var fs = require("fs");
 var xlsx = require('node-xlsx');
 var multiparty = require('multiparty');
-var sync = require('synchronize')
-var fiber = require('fibers');
+//var sync = require('synchronize')
+var Fiber = require('fibers');
 
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'USSD Express' });
@@ -175,31 +175,50 @@ function getMonthStart(num, cb) {
     })
 }
 
-function assignSimcard() {
-    var daylyLimit = 1000;
-    var monthlyLimit = 30000;
-    fiber(function() {
-        if(sync(getUnassignedCount)() < 1) return;
-
+function someF() {
+    return fiber(function() {
         var valueFunc = sync(getSimcardValue);
-        console.log(valueFunc);
-        console.log(valueFunc('9', 0, 1));
-
-
-        var date = new Date();
-        var dayStart = date.setHours(0, 0, 0, 0);
-        var dayEnd = date.setHours(23, 59, 59, 999);
-        var monthStart = (new Date(date.getFullYear(), date.getMonth(), 1)).setHours(0, 0, 0, 0);
-        var monthEnd = (new Date(date.getFullYear(), date.getMonth() + 1, 0)).setHours(23, 59, 59, 999);
-        db.each("select * from sim_cards order by num", function (err, row) {
-            //console.log(valueFunc('9', 0, 1));
-            //var dayValue = valueFunc(row.num, dayStart, dayEnd);
-            //console.log("Day value = " + dayValue);
-            //if(sync(getSimcardValue, row.num, dayStart, dayEnd)() >= daylyLimit) return;
-            //if(sync(getSimcardValue)(row.num, monthStart, monthStart + 30*24*3600*1000) >= monthlyLimit) return;
-        });
+        return valueFunc('9', 0, 1);
     }).run();
 }
+
+function assignSimcard() {Fiber(function() {
+    var dailyLimit = 1000;
+    var monthlyLimit = 30000;
+    var fiber = Fiber.current;
+    db.all("select count(*) as cnt from ussd_codes where num is null", function (err, row) {
+        if(err) return fiber.throwInto(err);
+        fiber.run(row[0].cnt);
+    })
+    var uncnt = Fiber.yield();
+    if(uncnt < 1) return;
+
+    fiber = Fiber.current;
+    db.all("select * from (select sc.num, " +
+        "coalesce((select sum(val) from ussd_log where num=sc.num and created>=strftime('%s', 'now', 'start of day')), 0) as dval, " +
+        "coalesce((select sum(val) from ussd_log where num=sc.num and created>=(select min(created) " +
+        "from ussd_log where created>=strftime('%s', 'now', 'start of month'))), 0) as mval from sim_cards sc) " +
+        "where dval<" + dailyLimit + " and mval<" + monthlyLimit + " order by num",
+        function(err, rows) {
+            if(err) return fiber.throwInto(err);
+            fiber.run(rows);
+        }
+    );
+    var simcards = Fiber.yield();
+    if(simcards.length == 0) return;
+
+    db.each("select code, val from ussd_codes where num is null", function (err, row) {
+        //choose simcard
+        for(var i = 0; i < simcards.length; i++) {
+            if(simcards[i].dval + row.val < dailyLimit && simcards[i].mval + row.val < monthlyLimit) {
+                simcards[i].dval += row.val;
+                simcards[i].mval += row.val;
+                db.run("update ussd_codes set num=? where code=?", simcards[i].num, row.code);
+            }
+        }
+    });
+    console.log("FINISHED");
+}).run();}
 assignSimcard();
 
 /*db.all("select
