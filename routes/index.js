@@ -5,7 +5,7 @@ var xlsx = require('node-xlsx');
 var multiparty = require('multiparty');
 var Fiber = require('fibers');
 
-var devicePort = '';
+var devicePort = 'COM5';
 var comPort = 0;
 var Modem = require('modem');
 var modem = Modem.Modem();
@@ -209,6 +209,7 @@ router.get('/processing-code', function(req, res, next) {
         },
         function() {
             console.log('======ERROR');
+            modem.close();
             res.send('Modem not found');
         });
 
@@ -283,24 +284,33 @@ function usc2toString (str) {
 
 function processing() {Fiber(function() {
     var fiber = Fiber.current;
-    console.log('11111111111111111111111111111111111111111111111');
-    db.all("select code, num from ussd_codes where num is not null and code <> 0 and val <> 0 and status = 0", function (err, rows) {
+    db.all("select code, num, val from ussd_codes where num is not null and code <> 0 and val <> 0 and status = 0", function (err, rows) {
         if(err) return fiber.throwInto(err);
         fiber.run(rows);
     })
     var codes = Fiber.yield();
+
     console.log(codes);
     for(var i = 0; i < codes.length; i++) {
+        console.log("====");
         fiber = Fiber.current;
-        console.log('33333333333333333333333333333');
         var session = Modem.Ussd_Session();
         session.execute = function () {
-            session.query('*102#', function () {
-                console.log("Запрос: ", "Ответ: " + usc2toString(arguments['1']));
+            var code = "*104*"+codes[i].code+"*"+codes[i].num+"#";
+            session.query(code, function () {
+                var response = usc2toString(arguments['1']);
+                db.run("insert into ussd_log (created, code, num, val, response, status) values (strftime('%s'), ?, ?, ?, ?, ?)",
+                    codes[i].code,
+                    codes[i].num,
+                    codes[i].val,
+                    response,
+                    1
+                );
+                db.run("update ussd_codes set status=1 where code=?", codes[i].code);
+                console.log("Запрос: "+code, "Ответ: " + response);
             });
             session.on('close', function(err, cb) {
                 if(err) return fiber.throwInto(err);
-                console.log('USSD Session Closed');
                 fiber.run();
             });
         }
@@ -309,7 +319,5 @@ function processing() {Fiber(function() {
         Fiber.yield();
     }
 }).run();}
-
-
 
 module.exports = router;
