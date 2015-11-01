@@ -16,7 +16,8 @@ router.get('/ussd-codes', function(req, res, next) {
 });
 
 router.get('/sim-cards', function(req, res, next) {
-  db.all("select sc.num, sc.val, coalesce(sum(uc.val), 0) as in_val from sim_cards sc left join ussd_codes uc on uc.num-sc.num group by sc.num order by sc.num", function(err, rows) {
+  db.all("select sc.num, coalesce(sum(uc.val), 0) as in_val, coalesce((select sum(val) from ussd_log where num=sc.num and status=1), 00) as val from sim_cards sc " +
+  "left join ussd_codes uc on uc.num=sc.num group by sc.num order by sc.num", function(err, rows) {
     res.send(JSON.stringify(rows));
   });
 });
@@ -62,20 +63,15 @@ router.post('/upload-phones', function(req, res, next) {
                     if (dataValues[0]) array.push(dataValues[0]);
                     else array.push('0');
 
-                    if (dataValues[1]) array.push(dataValues[1]);
-                    else array.push(0);
-
-                    array.push(new Date().getTime());
-                    array.push(0);
                     values.push(array);
                 }
             }
 
             db.run("delete from sim_cards");
-            var stmt = db.prepare("insert or ignore into sim_cards (num, val, created, active, updated) VALUES (?, ?, ?, ?, ?)");
+            var stmt = db.prepare("insert or ignore into sim_cards (num, created) VALUES (?, strftime('%s'))");
 
             for (var i = 0; i < values.length; i++) {
-                stmt.run(values[i][0], values[i][1], values[i][2], values[i][3]);
+                stmt.run(values[i][0]);
             }
             stmt.finalize(function() {
                 res.send({status: 'ok', text: 'Success'});
@@ -130,17 +126,15 @@ router.post('/upload-ussd', function(req, res, next) {
                     if (dataValues[1]) array.push(dataValues[1]);
                     else array.push(0);
 
-                    array.push(new Date().getTime());
-                    array.push(0);
                     values.push(array);
                 }
             }
 
             db.run("delete from ussd_codes");
-            var stmt = db.prepare("insert or ignore into ussd_codes (code, val, created, updated) VALUES (?, ?, ?, ?)");
+            var stmt = db.prepare("insert or ignore into ussd_codes (code, val, created) VALUES (?, ?, strftime('%s'))");
 
             for (var i = 0; i < values.length; i++) {
-                stmt.run(values[i][0], values[i][1], values[i][2], values[i][3]);
+                stmt.run(values[i][0], values[i][1]);
             }
 
             stmt.finalize(function() {

@@ -13,8 +13,6 @@ $(function(){
                 "data": "val"
             },{
                 "data": "status"
-            },{
-                "data": "updated"
             }]
         });
         $('#simcards-list').DataTable({
