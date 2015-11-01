@@ -5,6 +5,12 @@ var xlsx = require('node-xlsx');
 var multiparty = require('multiparty');
 var Fiber = require('fibers');
 
+var devicePort = '';
+var comPort = 0;
+var Modem = require('modem');
+var modem = Modem.Modem();
+var sp = require('serialport');
+
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'USSD Express' });
 });
@@ -191,5 +197,119 @@ function assignSimcard() {Fiber(function() {
         }
     }, function() {  updateStmt.finalize(); });
 }).run();}
+
+
+router.get('/processing-code', function(req, res, next) {
+    if (!modem.isOpened) {
+        comPort = 0;
+        openPort(function() {
+            processing();
+            console.log('======OK');
+            res.send('Modem is connected');
+        },
+        function() {
+            console.log('======ERROR');
+            res.send('Modem not found');
+        });
+
+    }
+    else res.send('Modem is connected');
+});
+
+function openPort (cb, errorcb) {
+    var device,
+        port;
+
+    if (comPort > 20) {
+        errorcb();
+        return;
+    }
+
+    comPort += 1;
+
+    if (devicePort) device = devicePort;
+    else device = "COM"+comPort;
+
+    port = new sp.SerialPort(device, {
+        parser: sp.parsers.raw
+    });
+
+    port.on('open', function() {
+        port.close();
+    });
+
+    port.on('close', function() {
+        port.close();
+        connectModem(device, cb, errorcb);
+    });
+
+    port.on('error', function() {
+        if (device == devicePort) devicePort = null;
+        openPort(cb, errorcb);
+    });
+}
+
+function connectModem(device, cb, errorcb) {
+    var session = Modem.Ussd_Session();
+    var isDetected = false;
+    var modemClose = false;
+
+    modem.open(device, function() {
+        modem.ussd_pdu = false;
+
+        session.execute = function() {
+            session.query('*102#', function() {
+                isDetected = true;
+                console.log('Модем обнаружен, порт ' + device);
+                cb();
+            });
+
+            session.on('close', function() {
+               if (!isDetected) openPort(cb, errorcb);
+            });
+        }
+
+        session.modem = modem;
+        session.start();
+    });
+}
+
+function usc2toString (str) {
+    var parts = str.match(/.{4}/g);
+    var result = '';
+    for(var i = 0; i < parts.length; i++) result += String.fromCharCode('0x' + parts[i]);
+    return result;
+}
+
+function processing() {Fiber(function() {
+    var fiber = Fiber.current;
+    console.log('11111111111111111111111111111111111111111111111');
+    db.all("select code, num from ussd_codes where num is not null and code <> 0 and val <> 0 and status = 0", function (err, rows) {
+        if(err) return fiber.throwInto(err);
+        fiber.run(rows);
+    })
+    var codes = Fiber.yield();
+    console.log(codes);
+    for(var i = 0; i < codes.length; i++) {
+        fiber = Fiber.current;
+        console.log('33333333333333333333333333333');
+        var session = Modem.Ussd_Session();
+        session.execute = function () {
+            session.query('*102#', function () {
+                console.log("Запрос: ", "Ответ: " + usc2toString(arguments['1']));
+            });
+            session.on('close', function(err, cb) {
+                if(err) return fiber.throwInto(err);
+                console.log('USSD Session Closed');
+                fiber.run();
+            });
+        }
+        session.modem = modem;
+        session.start();
+        Fiber.yield();
+    }
+}).run();}
+
+
 
 module.exports = router;
